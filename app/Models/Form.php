@@ -11,6 +11,10 @@ class Form extends Model
     'json_schema',
   ];
 
+  protected $casts = [
+    'json_schema' => 'array',
+  ];
+
   public function submissions()
   {
     return $this->hasMany(FormSubmission::class);

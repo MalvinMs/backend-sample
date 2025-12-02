@@ -46,27 +46,22 @@ class CloudflareJwtService
   }
 
   /**
-   * Get JWKs from Cloudflare (with caching)
+   * Get JWKs from Cloudflare
    *
    * @param string $teamDomain
    * @return array
    */
   protected function getJwks(string $teamDomain): array
   {
-    $cacheKey = 'cloudflare_jwks_' . $teamDomain;
+    $certsUrl = "https://{$teamDomain}/cdn-cgi/access/certs";
 
-    // Cache for 24 hours (JWKs don't change frequently)
-    return Cache::remember($cacheKey, 84600, function () use ($teamDomain) {
-      $certsUrl = "https://{$teamDomain}/cdn-cgi/access/certs";
+    $response = Http::timeout(5)->get($certsUrl);
 
-      $response = Http::timeout(5)->get($certsUrl);
+    if (!$response->successful()) {
+      throw new \Exception('Failed to fetch Cloudflare JWKs');
+    }
 
-      if (!$response->successful()) {
-        throw new \Exception('Failed to fetch Cloudflare JWKs');
-      }
-
-      return $response->json();
-    });
+    return $response->json();
   }
 
   /**

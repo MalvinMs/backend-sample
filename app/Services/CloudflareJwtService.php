@@ -28,12 +28,9 @@ class CloudflareJwtService
     // Get JWKs (JSON Web Key Set) from Cloudflare
     $jwks = $this->getJwks($teamDomain);
 
-    // Parse JWK set to get keys
-    $keys = JWK::parseKeySet($jwks);
-
-    // Decode and verify JWT
     try {
-      $decoded = JWT::decode($jwt, $keys);
+      // JWK::parseKeySet returns an associative array of kid to Key objects
+      $decoded = JWT::decode($jwt, JWK::parseKeySet($jwks));
 
       // Additional validation
       $this->validateAudience($decoded);

@@ -38,6 +38,23 @@ class JwkAuth
       ], 401);
     }
 
+    // Allow mock token in non-production environments
+    if (app()->environment('local', 'development') && $token === 'mock-token') {
+      $request->attributes->set('cloudflare_user', [
+        'email' => 'test@example.com',
+        'name' => 'Test User',
+        'sub' => 'mock-user-id',
+        'groups' => ['developers'],
+        'country' => 'US',
+      ]);
+      $request->attributes->set('cloudflare_jwt', (object) [
+        'email' => 'test@example.com',
+        'name' => 'Test User',
+        'sub' => 'mock-user-id',
+      ]);
+      return $next($request);
+    }
+
     try {
       // Verify JWT
       $decoded = $this->jwtService->verify($token);
